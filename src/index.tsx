@@ -12,14 +12,9 @@ import { updateInitialLoad } from "./redux-modules/settingsSlice";
 
 import { cleanupAction } from "./redux-modules/extraActions";
 
-// import steamPatch from "./steamPatch/steamPatch";
-import { fetchPowerControlInfo } from "./redux-modules/thunks";
 import AppContainer from "./App";
-import { initializePollingStore } from "./redux-modules/pollingMiddleware";
 
 export default definePlugin(() => {
-  initializePollingStore(store);
-
   // fetch settings from backend, send into redux state
   getSettings().then((result) => {
     const results = result || {};
@@ -29,8 +24,6 @@ export default definePlugin(() => {
         ...results,
       })
     );
-    store.dispatch(fetchPowerControlInfo());
-
     setTimeout(() => {
       setValuesForGameId({ gameId: "default" });
     }, 0);

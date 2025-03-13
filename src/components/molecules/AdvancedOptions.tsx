@@ -3,7 +3,6 @@ import { AppDispatch } from "../../redux-modules/store";
 import {
   AdvancedOption,
   getAdvancedOptionsInfoSelector,
-  getSteamPatchEnabledSelector,
   supportsCustomAcPowerSelector,
   updateAdvancedOption,
 } from "../../redux-modules/settingsSlice";
@@ -22,12 +21,6 @@ import {
   AdvancedOptionsType,
   DesktopAdvancedOptions,
 } from "../../backend/utils";
-
-export const useIsSteamPatchEnabled = () => {
-  const steamPatchEnabled = useSelector(getSteamPatchEnabledSelector);
-
-  return steamPatchEnabled;
-};
 
 const calculateDisabled = (
   option: AdvancedOption,

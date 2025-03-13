@@ -2,22 +2,13 @@ import { Dispatch } from "redux";
 import {
   activeGameIdSelector,
   getAdvancedOptionsInfoSelector,
-  getSteamPatchEnabledSelector,
-  setCpuBoost,
   setEnableTdpProfiles,
-  setSmt,
   updateAdvancedOption,
-  updateEpp,
   updateMaxTdp,
   updateMinTdp,
-  updatePowerGovernor,
 } from "./settingsSlice";
 import {
   setSetting,
-  persistCpuBoost,
-  persistSmt,
-  setEpp,
-  setPowerGovernor,
   onSuspend,
 } from "../backend/utils";
 import { PayloadAction } from "@reduxjs/toolkit";
@@ -30,11 +21,8 @@ export const commonMiddleware =
 
     const state = store.getState();
 
-    const steamPatchEnabled = getSteamPatchEnabledSelector(state);
-
-    const activeGameId = steamPatchEnabled
-      ? extractCurrentGameId()
-      : activeGameIdSelector(state);
+    
+    const activeGameId = activeGameIdSelector(state);
 
     if (action.type === suspendAction.type) {
       onSuspend();
@@ -52,18 +40,6 @@ export const commonMiddleware =
         value: action.payload,
       });
     }
-
-    if (action.type === updatePowerGovernor.type) {
-      setPowerGovernor({
-        powerGovernorInfo: action.payload,
-        gameId: activeGameId,
-      });
-    }
-
-    if (action.type === updateEpp.type) {
-      setEpp({ eppInfo: action.payload, gameId: activeGameId });
-    }
-
     if (action.type === updateMaxTdp.type) {
       setSetting({
         name: "maxTdp",
@@ -77,14 +53,6 @@ export const commonMiddleware =
         name: "advanced",
         value: advancedState,
       });
-    }
-
-    if (action.type === setSmt.type) {
-      persistSmt({ smt: action.payload, gameId: activeGameId });
-    }
-
-    if (action.type === setCpuBoost.type) {
-      persistCpuBoost({ cpuBoost: action.payload, gameId: activeGameId });
     }
 
     return result;

@@ -3,13 +3,6 @@ import { IS_DESKTOP } from "../components/atoms/DeckyFrontendLib";
 
 export enum AdvancedOptionsEnum {
   ENABLE_TDP_CONTROL = "enableTdpControl",
-  ENABLE_GPU_CONTROL = "enableGpuControl",
-  ENABLE_APU_SLOW_LIMIT = "enableApuSlowLimit",
-  STEAM_PATCH = "steamPatch",
-  ENABLE_POWER_CONTROL = "enablePowercontrol",
-  ENABLE_BACKGROUND_POLLING = "enableBackgroundPolling",
-  MAX_TDP_ON_RESUME = "maxTdpOnResume",
-  MAX_TDP_ON_GAME_PROFILE_CHANGE = 'maxTdpOnGameProfileChange',
   AC_POWER_PROFILES = "acPowerProfiles",
   FORCE_DISABLE_TDP_ON_RESUME = "forceDisableTdpOnResume",
   USE_PLATFORM_PROFILE = "platformProfile",
@@ -20,36 +13,13 @@ export enum AdvancedOptionsType {
   NUMBER_RANGE = 'number_range'
 }
 
-export enum RogAllyAdvancedOptions {
-  USE_PLATFORM_PROFILE = "platformProfile",
-  USE_WMI = "useWmi",
-  USE_EXTREME_POWERSAVE = "useExtremePowersave",
-}
 
-export enum LegionGoAdvancedOptions {
-  CUSTOM_TDP_MODE = "lenovoCustomTdpMode",
-}
 
 export const DesktopAdvancedOptions = [
   AdvancedOptionsEnum.ENABLE_TDP_CONTROL,
-  AdvancedOptionsEnum.ENABLE_GPU_CONTROL,
-  AdvancedOptionsEnum.ENABLE_POWER_CONTROL,
   AdvancedOptionsEnum.AC_POWER_PROFILES,
-  AdvancedOptionsEnum.FORCE_DISABLE_TDP_ON_RESUME,
-  AdvancedOptionsEnum.ENABLE_BACKGROUND_POLLING,
-  LegionGoAdvancedOptions.CUSTOM_TDP_MODE,
-  RogAllyAdvancedOptions.USE_PLATFORM_PROFILE,
-  RogAllyAdvancedOptions.USE_WMI,
-  RogAllyAdvancedOptions.USE_EXTREME_POWERSAVE,
 ] as string[];
 
-export enum GpuModes {
-  BATTERY = "BATTERY",
-  BALANCE = "BALANCE",
-  PERFORMANCE = "PERFORMANCE",
-  RANGE = "RANGE",
-  FIXED = "FIXED",
-}
 
 export enum ServerAPIMethods {
   SET_SETTING = "set_setting",
@@ -57,18 +27,10 @@ export enum ServerAPIMethods {
   LOG_INFO = "log_info",
   SET_TDP = "set_tdp",
   SAVE_TDP = "save_tdp",
-  POLL_TDP = "poll_tdp",
   PERSIST_TDP = "persist_tdp",
-  PERSIST_GPU = "persist_gpu",
-  PERSIST_SMT = "persist_smt",
   ON_SUSPEND = "on_suspend",
   OTA_UPDATE = "ota_update",
-  PERSIST_CPU_BOOST = "persist_cpu_boost",
   SET_VALUES_FOR_GAME_ID = "set_values_for_game_id",
-  SET_STEAM_PATCH_VALUES_FOR_GAME_ID = "set_steam_patch_values_for_game_id",
-  SET_POWER_GOVERNOR = "set_power_governor",
-  SET_EPP = "set_epp",
-  GET_POWER_CONTROL_INFO = "get_power_control_info",
   GET_IS_STEAM_RUNNING = "is_steam_running",
   GET_SUPPORTS_CUSTOM_AC_POWER_MANAGEMENT = "supports_custom_ac_power_management",
   GET_CURRENT_AC_POWER_STATUS = "get_ac_power_status",
@@ -86,13 +48,7 @@ export const setSetting = ({ name, value }: { name: string; value: any }) => {
 };
 export const onSuspend = callable(ServerAPIMethods.ON_SUSPEND);
 
-export const setPollTdp = ({ currentGameId }: { currentGameId: string }) => {
-  if (IS_DESKTOP) {
-    return call(ServerAPIMethods.POLL_TDP, { currentGameId });
-  }
 
-  return call(ServerAPIMethods.POLL_TDP, currentGameId);
-};
 export const setMaxTdp = callable(ServerAPIMethods.SET_MAX_TDP);
 export const isSteamRunning = callable(ServerAPIMethods.GET_IS_STEAM_RUNNING);
 
@@ -125,9 +81,6 @@ export const getLatestVersionNum = callable(
 
 export const otaUpdate = callable(ServerAPIMethods.OTA_UPDATE);
 
-export const getPowerControlInfo = callable(
-  ServerAPIMethods.GET_POWER_CONTROL_INFO
-);
 
 export const getSupportsCustomAcPower = callable(
   ServerAPIMethods.GET_SUPPORTS_CUSTOM_AC_POWER_MANAGEMENT
@@ -137,36 +90,6 @@ export const getCurrentAcPowerStatus = callable(
   ServerAPIMethods.GET_CURRENT_AC_POWER_STATUS
 );
 
-export const setPowerGovernor = ({
-  powerGovernorInfo,
-  gameId,
-}: {
-  powerGovernorInfo: any;
-  gameId: string;
-}) => {
-  if (IS_DESKTOP) {
-    return call(ServerAPIMethods.SET_POWER_GOVERNOR, {
-      powerGovernorInfo,
-      gameId,
-    });
-  }
-
-  return call(ServerAPIMethods.SET_POWER_GOVERNOR, powerGovernorInfo, gameId);
-};
-
-export const setEpp = ({
-  eppInfo,
-  gameId,
-}: {
-  eppInfo: any;
-  gameId: string;
-}) => {
-  if (IS_DESKTOP) {
-    return call(ServerAPIMethods.SET_EPP, { eppInfo, gameId });
-  }
-
-  return call(ServerAPIMethods.SET_EPP, eppInfo, gameId);
-};
 
 export const persistTdp = ({
   tdp,
@@ -188,72 +111,4 @@ export const setValuesForGameId = ({ gameId }: { gameId: string }) => {
   }
 
   return call(ServerAPIMethods.SET_VALUES_FOR_GAME_ID, gameId);
-};
-
-export const setSteamPatchValuesForGameId = ({
-  gameId,
-}: {
-  gameId: string;
-}) => {
-  if (IS_DESKTOP) {
-    return call(ServerAPIMethods.SET_STEAM_PATCH_VALUES_FOR_GAME_ID, {
-      gameId,
-    });
-  }
-
-  return call(ServerAPIMethods.SET_STEAM_PATCH_VALUES_FOR_GAME_ID, gameId);
-};
-
-export const persistGpu = ({
-  minGpuFrequency,
-  maxGpuFrequency,
-  gameId,
-}: {
-  minGpuFrequency: number;
-  maxGpuFrequency: number;
-  gameId: string;
-}) => {
-  if (IS_DESKTOP) {
-    return call(ServerAPIMethods.PERSIST_GPU, {
-      minGpuFrequency,
-      maxGpuFrequency,
-      gameId,
-    });
-  }
-
-  return call<
-    [minGpuFrequency: number, maxGpuFrequency: number, gameId: string],
-    any
-  >(ServerAPIMethods.PERSIST_GPU, minGpuFrequency, maxGpuFrequency, gameId);
-};
-
-export const persistSmt = ({
-  smt,
-  gameId,
-}: {
-  smt: boolean;
-  gameId: string;
-}) => {
-  if (IS_DESKTOP) {
-    return call(ServerAPIMethods.PERSIST_SMT, {
-      smt,
-      gameId,
-    });
-  }
-
-  return call(ServerAPIMethods.PERSIST_SMT, smt, gameId);
-};
-
-export const persistCpuBoost = ({
-  cpuBoost,
-  gameId,
-}: {
-  cpuBoost: boolean;
-  gameId: string;
-}) => {
-  if (IS_DESKTOP) {
-    return call(ServerAPIMethods.PERSIST_CPU_BOOST, { cpuBoost, gameId });
-  }
-
-  return call(ServerAPIMethods.PERSIST_CPU_BOOST, cpuBoost, gameId);
 };

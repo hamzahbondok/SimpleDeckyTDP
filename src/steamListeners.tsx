@@ -15,7 +15,6 @@ import {
   getSupportsCustomAcPower,
   logInfo,
   setMaxTdp,
-  setPollTdp,
 } from "./backend/utils";
 import { debounce } from "lodash";
 
@@ -69,8 +68,6 @@ function handleTempMaxTdpProfile(compareId: string, advanced: any) {
     tempMaxTdpTimeoutId = window.setTimeout(() => {
       setMaxTdp();
 
-      tempMaxTdpTimeoutId = window.setTimeout(() => {
-        setPollTdp({ currentGameId: compareId });
       }, tempMaxTdpProfileDuration * 1000);
     }, 500);
   }
@@ -92,24 +89,14 @@ export const resumeFromSuspendEventListener = () => {
 
           const { advancedState } = getAdvancedOptionsInfoSelector(state);
 
-          if (advancedState[AdvancedOptionsEnum.FORCE_DISABLE_TDP_ON_RESUME]) {
-            return;
-          }
-
-          if (advancedState[AdvancedOptionsEnum.MAX_TDP_ON_RESUME]) {
-            setMaxTdp();
-          } else {
-            store.dispatch(resumeAction());
+          {
+          store.dispatch(resumeAction());
           }
         }, 2000);
 
         const state = store.getState();
 
         const { advancedState } = getAdvancedOptionsInfoSelector(state);
-
-        if (advancedState[AdvancedOptionsEnum.FORCE_DISABLE_TDP_ON_RESUME]) {
-          return;
-        }
 
         // sets TDP, etc, to default expected values
         setTimeout(() => {

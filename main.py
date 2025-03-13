@@ -8,11 +8,8 @@ import power_utils
 import cpu_utils
 import os
 from plugin_settings import merge_tdp_profiles, get_saved_settings, get_tdp_profile, get_active_tdp_profile, per_game_profiles_enabled, set_setting as persist_setting
-from gpu_utils import get_gpu_frequency_range
 import plugin_utils
-import migrations
 import steam_info
-import device_utils
 
 class Plugin:
 
@@ -22,33 +19,6 @@ class Plugin:
   async def is_steam_running(self):
     return steam_info.is_steam_running()
 
-  async def get_power_control_info(self):
-    response = {
-      'powerControlsEnabled': False,
-      "eppOptions": [],
-      "powerGovernorOptions": [],
-      "scalingDriver": '',
-      'supportsCpuBoost': False
-    }
-    try:
-      with file_timeout.time_limit(5):
-        pstate_status = cpu_utils.get_pstate_status()
-        response['pstateStatus'] = pstate_status
-        if pstate_status == 'passive' and device_utils.is_intel():
-          cpu_utils.set_pstate_active()
-          response['pstateStatus'] = 'active'
-
-        response['supportsSmt'] = cpu_utils.supports_smt()
-        response['scalingDriver'] = cpu_utils.get_scaling_driver()
-        response['supportsCpuBoost'] = cpu_utils.supports_cpu_boost()
-        response['powerControlsEnabled'] = power_utils.power_controls_enabled()
-        if response['powerControlsEnabled']:
-          response['eppOptions'] = power_utils.get_available_epp_options()
-          response['powerGovernorOptions'] = power_utils.get_available_governor_options()
-    except Exception as e:
-      decky_plugin.logger.error(f'{__name__} get_power_control_info {e}')
-    return response
-
   async def get_settings(self):
     try:
       settings = get_saved_settings()
@@ -57,18 +27,7 @@ class Plugin:
           settings['advancedOptions'] = advanced_options.get_advanced_options()
 
           settings['supportsCustomAcPowerManagement'] = ac_power.supports_custom_ac_power_management()
-          settings['cpuVendor'] = device_utils.get_cpu_manufacturer()
 
-          if device_utils.is_intel():
-            # hardcode min/max TDP values for Intel
-            min_tdp, max_tdp = cpu_utils.get_intel_tdp_limits()
-            settings['maxTdp'] = max_tdp
-            settings['minTdp'] = min_tdp
-
-          gpu_min, gpu_max = get_gpu_frequency_range()
-          if (gpu_min and gpu_max):
-            settings['minGpuFrequency'] = gpu_min
-            settings['maxGpuFrequency'] = gpu_max
       except Exception as e:
         decky_plugin.logger.error(f"main#get_settings failed to get info {e}")
 
@@ -89,99 +48,12 @@ class Plugin:
   async def set_values_for_game_id(self, gameId):
     plugin_utils.set_values_for_game_id(gameId)
 
-  async def set_steam_patch_values_for_game_id(self, gameId):
-    enabled = per_game_profiles_enabled()
-    plugin_utils.set_steam_patch_values_for_game_id(gameId, enabled)
   
   async def persist_tdp(self, tdp, gameId):
     plugin_utils.persist_tdp(tdp, gameId)
 
-  async def persist_gpu(self, minGpuFrequency, maxGpuFrequency, gameId):
-    plugin_utils.persist_gpu(minGpuFrequency, maxGpuFrequency, gameId)
-
-  async def set_power_governor(self, powerGovernorInfo, gameId):
-    scaling_driver = powerGovernorInfo.get('scalingDriver')
-    powerGovernor = powerGovernorInfo.get('powerGovernor')
-
-    tdp_profiles = {
-      f'{gameId}': {
-        'powerControls': {
-          f'{scaling_driver}': {
-            'powerGovernor': powerGovernor
-          }
-        }
-      }
-    }
-    merge_tdp_profiles(tdp_profiles)
-
-    tdp_profile = get_tdp_profile(gameId)
-    if tdp_profile:
-      plugin_utils.set_power_governor_for_tdp_profile(tdp_profile)
-
-  async def set_epp(self, eppInfo, gameId):
-    scaling_driver = eppInfo.get('scalingDriver')
-    epp = eppInfo.get('epp')
-
-    tdp_profiles = {
-      f'{gameId}': {
-        'powerControls': {
-          f'{scaling_driver}': {
-            'epp': epp
-          }
-        }
-      }
-    }
-    merge_tdp_profiles(tdp_profiles)
-
-    tdp_profile = get_tdp_profile(gameId)
-    if tdp_profile and scaling_driver and epp:
-      plugin_utils.set_epp_for_tdp_profile(tdp_profile)
-
-  async def persist_smt(self, smt, gameId):
-      tdp_profiles = {
-          f'{gameId}': {
-              'smt': smt
-          }
-      }
-      merge_tdp_profiles(tdp_profiles)
-
-      tdp_profile = get_tdp_profile(gameId)
-
-      cpu_utils.set_smt(smt)
-      time.sleep(0.3)
-      plugin_utils.set_power_governor_for_tdp_profile(tdp_profile)
-
-  async def on_suspend(self):
-    cpu_utils.set_smt(True)
-
-  async def persist_cpu_boost(self, cpuBoost, gameId):
-    tdp_profiles = {
-      f'{gameId}': {
-        'cpuBoost': cpuBoost
-      }
-    }
-    merge_tdp_profiles(tdp_profiles)
-
-    return plugin_utils.set_values_for_game_id(gameId)
-  
   async def get_latest_version_num(self):
     return plugin_update.get_latest_version()
-
-  async def poll_tdp(self, currentGameId: str):
-    settings = get_saved_settings()
-    tdp_profile = get_tdp_profile('default')
-
-    if settings.get('enableTdpProfiles'):
-      tdp_profile = get_tdp_profile(currentGameId) or tdp_profile
-
-    try:
-      with file_timeout.time_limit(3):
-        plugin_utils.set_values_for_tdp_profile(tdp_profile)
-    except Exception as e:
-      decky_plugin.logger.error(f'main#poll_tdp file timeout {e}')
-      return False
-
-    return True      
 
   async def save_tdp(self, tdpProfiles, currentGameId, advanced):
     try:
@@ -205,13 +77,6 @@ class Plugin:
     if (max_tdp and max_tdp > 10):
       cpu_utils.set_tdp(max_tdp)
 
-  async def ota_update(self):
-    # trigger ota update
-    try:
-      with file_timeout.time_limit(15):
-        return plugin_update.ota_update()
-    except Exception as e:
-      decky_plugin.logger.error(e)
 
   async def supports_custom_ac_power_management(self):
     return ac_power.supports_custom_ac_power_management()
