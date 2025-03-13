@@ -9,7 +9,6 @@ import {
   useIsInitiallyLoading,
 } from "./hooks/useInitialState";
 import AdvancedOptions from "./components/molecules/AdvancedOptions";
-import OtaUpdates from "./components/molecules/OtaUpdates";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { DeckySection } from "./components/atoms/DeckyFrontendLib";
 import { useIsDesktop } from "./hooks/desktopHooks";
@@ -43,11 +42,6 @@ const App: FC = memo(({}) => {
               <TdpRange />
             </>
           )}
-          <AdvancedOptions />
-          {!isDesktop && (
-            <ErrorBoundary title="OTA Updates">
-              <OtaUpdates />
-            </ErrorBoundary>
           )}
         </>
       )}
