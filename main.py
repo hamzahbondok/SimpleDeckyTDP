@@ -100,10 +100,4 @@ class Plugin:
     decky_plugin.logger.info("SimpleDeckyTDP Unloading")
     pass
 
-  # Migrations that should be performed before entering `_main()`.
-  async def _migration(self):
-    decky_plugin.logger.info("Migrating")
 
-    # migrations.migrate_smt()
-    # migrations.disable_steam_patch()
-    migrations.migrate_gpu_mode()
