@@ -1,4 +1,4 @@
-s#!/usr/bin/env bash
+s#!/usr/bin/env bats
 CLI_LOCATION="$(pwd)/cli"
 echo "Building plugin in $(pwd)"
 printf "Please input sudo password to proceed.\n"
@@ -8,3 +8,4 @@ printf "Please input sudo password to proceed.\n"
 # printf "\n"
 
 echo $sudopass | sudo $CLI_LOCATION/decky plugin build $(pwd)
+11
