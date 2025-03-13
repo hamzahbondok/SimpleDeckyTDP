@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 // import type { PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from "./store";
 
 type UiStateType = {
   isDesktop?: boolean;
@@ -18,3 +19,7 @@ export const uiSlice = createSlice({
     // },
   },
 });
+
+export const selectIsDesktop = (state: RootState) => {
+  return state.ui.isDesktop;
+};
