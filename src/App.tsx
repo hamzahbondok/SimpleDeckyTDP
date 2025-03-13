@@ -42,7 +42,7 @@ const App: FC = memo(({}) => {
               <TdpRange />
             </>
           )}
-          )}
+          
         </>
       )}
     </>
